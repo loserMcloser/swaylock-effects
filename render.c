@@ -143,7 +143,7 @@ void render_lock_symbol(cairo_t *cairo, char *lock_symbol, int buffer_width, int
 	cairo_text_extents_t lock_extents;
 	cairo_font_extents_t lock_fe;
 	double lock_x, lock_y;
-	cairo_select_font_face(cairo, "Font Awesome 5 Free",
+	cairo_select_font_face(cairo, "Font Awesome 6 Free",
 		CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_text_extents(cairo, lock_symbol, &lock_extents);
 	cairo_font_extents(cairo, &lock_fe);

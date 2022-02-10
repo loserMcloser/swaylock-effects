@@ -78,7 +78,7 @@ Locks your Wayland session.
 	The date format for the indicator clock. Defaults to '%a, %x'.
 
 *--lock-symbol*
-	Show a lock symbol in the indicator. (Requires Font Awesome 5 Free.)
+	Show a lock symbol in the indicator. (Requires Font Awesome 6 Free.)
 
 *--user*
 	Show username in the indicator.

@@ -1102,7 +1102,7 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		"  --datestr <format>               "
 			"The format string for the date. Defaults to '%a, %x'.\n"
 		"  --lock-symbol                    "
-			"Show a lock symbol. (Requires Font Awesome 5 Free.)\n"
+			"Show a lock symbol. (Requires Font Awesome 6 Free.)\n"
 		"  --user                           "
 			"Show name of locked user.\n"
 		"  -v, --version                    "
