@@ -149,9 +149,9 @@ void render_lock_symbol(cairo_t *cairo, char *lock_symbol, int buffer_width, int
 	cairo_font_extents(cairo, &lock_fe);
 	lock_x = (buffer_width / 2) - (lock_extents.width / 2 + lock_extents.x_bearing);
 	if (buffer_diameter > 0) {
-		lock_y = (buffer_diameter / 2) + (lock_fe.height / 2 - lock_fe.descent) - lock_fe.height / 10;
+		lock_y = (buffer_diameter / 2) + (lock_fe.height / 2 - lock_fe.descent);
 	} else
-		lock_y = line_y - lock_fe.height * 1.25f;
+		lock_y = line_y - lock_fe.height * 1.25f; // don't remember what this adjustment does...
 	cairo_move_to(cairo, lock_x, lock_y);
 	cairo_show_text(cairo, lock_symbol);
 }
