@@ -402,7 +402,7 @@ void render_frame(struct swaylock_surface *surface) {
 				new_width = extents_l2.width;
 
 		} else if (state->args.lock_symbol) {
-			cairo_set_font_size(cairo, arc_radius / 1.5f);
+			cairo_set_font_size(cairo, arc_radius * state->args.lock_font_ratio / 100.0f);
 			render_lock_symbol(cairo, lock_symbol, buffer_width, buffer_diameter, 0.0f);
 			cairo_select_font_face(cairo, state->args.font,
 				CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);

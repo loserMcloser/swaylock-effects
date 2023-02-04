@@ -132,6 +132,9 @@ Locks your Wayland session.
 *--font-size* <size>
 	Sets a fixed font size for the indicator text.
 
+*--font-size* <percent>
+	Sets the lock size as a percentage of the indicator radius.
+
 *--indicator-idle-visible*
 	Sets the indicator to show even if idle.
 
