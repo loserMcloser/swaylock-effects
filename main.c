@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <poll.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -12,6 +13,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 #include <wayland-client.h>
@@ -930,6 +932,7 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		LO_CAPS_LOCK_KEY_HL_COLOR,
 		LO_FONT,
 		LO_FONT_SIZE,
+		LO_SYMBOL_FONT_RATIO,
 		LO_IND_IDLE_VISIBLE,
 		LO_IND_RADIUS,
 		LO_IND_X_POSITION,
@@ -977,6 +980,9 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		LO_CLOCK,
 		LO_TIMESTR,
 		LO_DATESTR,
+		LO_SYMBOL,
+		LO_SYMBOL_FONT,
+		LO_USER,
 		LO_FADE_IN,
 		LO_SUBMIT_ON_TOUCH,
 		LO_GRACE,
@@ -1010,6 +1016,7 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		{"caps-lock-key-hl-color", required_argument, NULL, LO_CAPS_LOCK_KEY_HL_COLOR},
 		{"font", required_argument, NULL, LO_FONT},
 		{"font-size", required_argument, NULL, LO_FONT_SIZE},
+		{"symbol-font-ratio", required_argument, NULL, LO_SYMBOL_FONT_RATIO},
 		{"indicator-idle-visible", no_argument, NULL, LO_IND_IDLE_VISIBLE},
 		{"indicator-radius", required_argument, NULL, LO_IND_RADIUS},
 		{"indicator-thickness", required_argument, NULL, LO_IND_THICKNESS},
@@ -1057,6 +1064,9 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		{"clock", no_argument, NULL, LO_CLOCK},
 		{"timestr", required_argument, NULL, LO_TIMESTR},
 		{"datestr", required_argument, NULL, LO_DATESTR},
+		{"symbol", required_argument, NULL, LO_SYMBOL},
+		{"symbol_font", required_argument, NULL, LO_SYMBOL_FONT},
+		{"user", no_argument, NULL, LO_USER},
 		{"fade-in", required_argument, NULL, LO_FADE_IN},
 		{"submit-on-touch", no_argument, NULL, LO_SUBMIT_ON_TOUCH},
 		{"grace", required_argument, NULL, LO_GRACE},
@@ -1120,6 +1130,12 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 			"The format string for the time. Defaults to '%T'.\n"
 		"  --datestr <format>               "
 			"The format string for the date. Defaults to '%a, %x'.\n"
+		"  --symbol <character>             "
+			"Show a symbol character in the center of the indicator.\n"
+		"  --symbol_font <font>             "
+			"Font to use for the symbol character. Defaults to 'Font Awesome 6 Free'.\n"
+		"  --user                           "
+			"Show name of locked user.\n"
 		"  -v, --version                    "
 			"Show the version number and quit.\n"
 		"  --bs-hl-color <color>            "
@@ -1134,6 +1150,8 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 			"Sets the font of the text.\n"
 		"  --font-size <size>               "
 			"Sets a fixed font size for the indicator text.\n"
+		"  --symbol-font-ratio <percent>       "
+			"Sets the symbol size as a percentage (out of 100) of the indicator radius.\n"
 		"  --indicator-idle-visible         "
 			"Sets the indicator to show even if idle.\n"
 		"  --indicator-radius <radius>      "
@@ -1350,6 +1368,11 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		case LO_FONT_SIZE:
 			if (state) {
 				state->args.font_size = atoi(optarg);
+			}
+			break;
+		case LO_SYMBOL_FONT_RATIO:
+			if (state) {
+				state->args.symbol_font_ratio = atoi(optarg);
 			}
 			break;
 		case LO_IND_IDLE_VISIBLE:
@@ -1631,6 +1654,24 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 				state->args.datestr = strdup(optarg);
 			}
 			break;
+		case LO_SYMBOL:
+			if (state) {
+				free(state->args.symbol);
+				state->args.symbol = strdup(optarg);
+				state->show_symbol = true;
+			}
+			break;
+		case LO_SYMBOL_FONT:
+			if (state) {
+				free(state->args.symbol_font);
+				state->args.symbol_font = strdup(optarg);
+			}
+			break;
+		case LO_USER:
+			if (state) {
+				state->args.user = true;
+			}
+			break;
 		case LO_FADE_IN:
 			if (state) {
 				state->args.fade_in = parse_seconds(optarg);
@@ -1811,6 +1852,15 @@ void log_init(int argc, char **argv) {
 	swaylock_log_init(LOG_ERROR);
 }
 
+static void get_username(char **ustr) {
+        uid_t uid = geteuid();
+        struct passwd *pw = getpwuid(uid);
+        if (pw)
+                *ustr = pw->pw_name;
+        else
+                *ustr = NULL;
+}
+
 int main(int argc, char **argv) {
 	log_init(argc, argv);
 	initialize_pw_backend(argc, argv);
@@ -1819,10 +1869,12 @@ int main(int argc, char **argv) {
 	enum line_mode line_mode = LM_LINE;
 	state.failed_attempts = 0;
 	state.indicator_dirty = false;
+	state.show_symbol = false,
 	state.args = (struct swaylock_args){
 		.mode = BACKGROUND_MODE_FILL,
 		.font = strdup("sans-serif"),
 		.font_size = 0,
+		.symbol_font_ratio = 67,
 		.radius = 75,
 		.thickness = 10,
 		.indicator_x_position = 0,
@@ -1845,6 +1897,9 @@ int main(int argc, char **argv) {
 		.clock = false,
 		.timestr = strdup("%T"),
 		.datestr = strdup("%a, %x"),
+		.symbol = NULL,
+		.symbol_font = strdup("Font Awesome 6 Free"),
+		.user = false,
 		.allow_fade = true,
 		.password_grace_period = 0,
 
@@ -1894,6 +1949,9 @@ int main(int argc, char **argv) {
 	if (state.args.password_grace_period > 0) {
 		state.auth_state = AUTH_STATE_GRACE;
 	}
+
+	if (state.args.user)
+		get_username(&(state.username));
 
 	state.password.len = 0;
 	state.password.buffer_len = 1024;

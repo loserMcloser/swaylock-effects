@@ -138,6 +138,23 @@ void render_background_fade(struct swaylock_surface *surface, uint32_t time) {
 	render_frame(surface);
 }
 
+void render_symbol(cairo_t *cairo, char *symbol, char *symbol_font, int buffer_width, int buffer_diameter, double line_y) {
+        cairo_text_extents_t symbol_extents;
+        cairo_font_extents_t symbol_fe;
+        double symbol_x, symbol_y;
+        cairo_select_font_face(cairo, symbol_font,
+                CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_text_extents(cairo, symbol, &symbol_extents);
+        cairo_font_extents(cairo, &symbol_fe);
+        symbol_x = (buffer_width / 2) - (symbol_extents.width / 2 + symbol_extents.x_bearing);
+        if (buffer_diameter > 0) {
+                symbol_y = (buffer_diameter / 2) + (symbol_fe.height / 2 - symbol_fe.descent);
+        } else
+                symbol_y = line_y - symbol_fe.height * 1.25f; /* don't remember what this adjustment does */
+        cairo_move_to(cairo, symbol_x, symbol_y);
+        cairo_show_text(cairo, symbol);
+}
+
 void render_frame(struct swaylock_surface *surface) {
 	struct swaylock_state *state = surface->state;
 
@@ -290,6 +307,8 @@ void render_frame(struct swaylock_surface *surface) {
 				}
 			} else if (state->args.clock) {
 				timetext(surface, &text_l1, &text_l2);
+			} else if (state->args.user) {
+				text = state->username;
 			}
 
 			xkb_layout_index_t num_layout = xkb_keymap_num_layouts(state->xkb.keymap);
@@ -310,6 +329,8 @@ void render_frame(struct swaylock_surface *surface) {
 		default:
 			if (state->args.clock)
 				timetext(surface, &text_l1, &text_l2);
+			else if (state->args.user)
+				text = state->username;
 			break;
 		}
 
@@ -328,6 +349,11 @@ void render_frame(struct swaylock_surface *surface) {
 				(extents.width / 2 + extents.x_bearing);
 			y = (buffer_diameter / 2) +
 				(fe.height / 2 - fe.descent);
+
+			if (state->show_symbol) {
+				render_symbol(cairo, state->args.symbol, state->args.symbol_font, buffer_width, 0, y);
+				cairo_select_font_face(cairo, state->args.font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+			}
 
 			cairo_move_to(cairo, x, y);
 			cairo_show_text(cairo, text);
@@ -370,6 +396,16 @@ void render_frame(struct swaylock_surface *surface) {
 			cairo_show_text(cairo, text_l2);
 			cairo_close_path(cairo);
 			cairo_new_sub_path(cairo);
+			cairo_set_font_size(cairo, font_size);
+
+			/* Symbol */
+
+			if (state->show_symbol) {
+				render_symbol(cairo, state->args.symbol, state->args.symbol_font, buffer_width, 0, y_l1);
+				cairo_select_font_face(cairo, state->args.font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+			}
+			cairo_close_path(cairo);
+			cairo_new_sub_path(cairo);
 
 			if (new_width < extents_l1.width)
 				new_width = extents_l1.width;
@@ -378,6 +414,14 @@ void render_frame(struct swaylock_surface *surface) {
 
 
 			cairo_set_font_size(cairo, font_size);
+
+		} else if (state->show_symbol) {
+			cairo_set_font_size(cairo, arc_radius * state->args.symbol_font_ratio / 100.0f);
+			render_symbol(cairo, state->args.symbol, state->args.symbol_font, buffer_width, buffer_diameter, 0.0f);
+			cairo_select_font_face(cairo, state->args.font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_set_font_size(cairo, font_size);
+			cairo_close_path(cairo);
+			cairo_new_sub_path(cairo);
 		}
 
 		// Typing indicator: Highlight random part on keypress

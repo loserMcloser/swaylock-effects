@@ -51,6 +51,7 @@ struct swaylock_args {
 	enum background_mode mode;
 	char *font;
 	uint32_t font_size;
+	uint32_t symbol_font_ratio;
 	uint32_t radius;
 	uint32_t thickness;
 	uint32_t indicator_x_position;
@@ -73,6 +74,9 @@ struct swaylock_args {
 	bool time_effects;
 	bool indicator;
 	bool clock;
+	char* symbol;
+	char* symbol_font;
+	bool user;
 	char *timestr;
 	char *datestr;
 	uint32_t fade_in;
@@ -112,6 +116,8 @@ struct swaylock_state {
 	struct swaylock_password password;
 	struct swaylock_xkb xkb;
 	enum auth_state auth_state;
+	char *username;
+	bool show_symbol;
 	bool indicator_dirty;
 	int render_randnum;
 	int failed_attempts;

@@ -77,6 +77,15 @@ Locks your Wayland session.
 *--datestr* <format>
 	The date format for the indicator clock. Defaults to '%a, %x'.
 
+*--symbol* <character>
+	Show a symbol character in the center of the indicator.
+
+*--symbol_font* <font>
+	Font to use for the symbol character. Defaults to 'Font Awesome 6 Free'.
+
+*--user*
+	Show username in the indicator.
+
 *-i, --image* [[<output>]:]<path>
 	Display the given image, optionally only on the given output. Use -c to set
 	a background color. If the path potentially contains a ':', prefix it with another
