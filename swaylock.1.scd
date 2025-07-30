@@ -81,7 +81,7 @@ Locks your Wayland session.
 	Show a symbol character in the center of the indicator.
 
 *--symbol_font* <font>
-	Font to use for the symbol character. Defaults to 'Font Awesome 6 Free'.
+	Font to use for the symbol character. Defaults to 'Font Awesome 7 Free'.
 
 *--user*
 	Show username in the indicator.

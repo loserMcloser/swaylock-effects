@@ -1133,7 +1133,7 @@ static int parse_options(int argc, char **argv, struct swaylock_state *state,
 		"  --symbol <character>             "
 			"Show a symbol character in the center of the indicator.\n"
 		"  --symbol_font <font>             "
-			"Font to use for the symbol character. Defaults to 'Font Awesome 6 Free'.\n"
+			"Font to use for the symbol character. Defaults to 'Font Awesome 7 Free'.\n"
 		"  --user                           "
 			"Show name of locked user.\n"
 		"  -v, --version                    "
@@ -1898,7 +1898,7 @@ int main(int argc, char **argv) {
 		.timestr = strdup("%T"),
 		.datestr = strdup("%a, %x"),
 		.symbol = NULL,
-		.symbol_font = strdup("Font Awesome 6 Free"),
+		.symbol_font = strdup("Font Awesome 7 Free"),
 		.user = false,
 		.allow_fade = true,
 		.password_grace_period = 0,
